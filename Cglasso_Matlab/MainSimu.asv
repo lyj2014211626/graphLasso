@@ -1,0 +1,50 @@
+addpath ../UtilityFunctions/AR_matlab_utilities/
+addpath ../UtilityFunctions/DLM/
+addpath ../UtilityFunctions/GGM/
+addpath ../UtilityFunctions/TruncatedSampler/
+addpath ../UtilityFunctions/MixtureGaussian/
+addpath ../UtilityFunctions/OtherFunction/
+addpath ../UtilityFunctions/Glasso/
+addpath ../UtilityFunctions/Bglasso_Block/
+
+
+
+
+     
+    
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    %%%%%%   Timing comparison: Across dimension p 
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+
+    
+%%%% Generate data
+rand('seed',123456)
+p = 100; n =2*p;
+SigTrue = toeplitz([1,0.4,zeros(1,p-2)]);    
+w = eig(SigTrue); delta = (p*min(w)-max(w))/(1-p); SigTrue = SigTrue + delta*eye(p);
+ 
+ 
+% SigTrue = ones(p)+eye(p); % Dense
+ 
+ Y = mvnrnd(zeros(p,1),SigTrue,n)'; 
+
+
+
+    
+ S = Y*Y'/n; % sample covariance matrix;
+
+ rho = 0.3; Rho = rho*ones(p)-rho*eye(p); % shrinkage parameters;
+ 
+ SigInit = S; % Initial Value;
+ 
+%%%%%%%%%%% ECM algorithm
+   [Sig,C,loglik] = CglassoECM(S,Rho,SigInit,1e-3,1e4);
+
+%%%%%%%%%%% Coordinate descent algorithm 
+[Sig_cglasso,C_cglasso,loglik_cd] = CglassoCD(Q,Rho,SigInit,1e-3,200,1e4);
+
+
